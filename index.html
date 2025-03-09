@@ -1,53 +1,89 @@
 <!DOCTYPE html>
-   <html lang="en">
-   <head>
-       <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>Таймер с уведомлением</title>
-   </head>
-   <body>
-       <h1>Таймер</h1>
-       <input type="number" id="timerInput" placeholder="Введите время в секундах">
-       <button id="startTimer">Запустить таймер</button>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таймер с уведомлением</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #timerDisplay {
+            font-size: 2em;
+            margin: 20px 0;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Таймер с обратным отсчетом</h1>
+    <input type="number" id="timerInput" placeholder="Введите время в секундах">
+    <button id="startTimer">Запустить таймер</button>
+    <div id="timerDisplay">00:00</div>
 
-       <script>
-           // Запрашиваем разрешение на уведомления
-           function requestNotificationPermission() {
-               if (Notification.permission !== 'granted') {
-                   Notification.requestPermission().then(permission => {
-                       if (permission === 'granted') {
-                           console.log('Разрешение на уведомления получено!');
-                       }
-                   });
-               }
-           }
+    <script>
+        let timerInterval; // Переменная для хранения интервала таймера
 
-           // Отправляем уведомление
-           function sendNotification() {
-               if (Notification.permission === 'granted') {
-                   new Notification('Время вышло!', {
-                       body: 'Таймер завершил отсчет.',
-                       icon: 'icon.png' // Иконка для уведомления
-                   });
-               } else {
-                   console.log('Разрешение на уведомления не предоставлено.');
-               }
-           }
+        // Запрашиваем разрешение на уведомления
+        function requestNotificationPermission() {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('Разрешение на уведомления получено!');
+                    }
+                });
+            }
+        }
 
-           // Запуск таймера
-           document.getElementById('startTimer').addEventListener('click', () => {
-               const seconds = parseInt(document.getElementById('timerInput').value);
-               if (isNaN(seconds) || seconds <= 0) {
-                   alert('Пожалуйста, введите корректное количество секунд.');
-                   return;
-               }
+        // Отправляем уведомление
+        function sendNotification() {
+            if (Notification.permission === 'granted') {
+                new Notification('Время вышло!', {
+                    body: 'Таймер завершил отсчет.',
+                    icon: 'icon.png' // Иконка для уведомления
+                });
+            } else {
+                console.log('Разрешение на уведомления не предоставлено.');
+            }
+        }
 
-               requestNotificationPermission(); // Запрашиваем разрешение
+        // Обновляем отображение таймера
+        function updateTimerDisplay(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            const display = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+            document.getElementById('timerDisplay').textContent = display;
+        }
 
-               setTimeout(() => {
-                   sendNotification(); // Отправляем уведомление
-               }, seconds * 1000); // Устанавливаем таймер
-           });
-       </script>
-   </body>
-   </html>
+        // Запуск таймера
+        document.getElementById('startTimer').addEventListener('click', () => {
+            const seconds = parseInt(document.getElementById('timerInput').value);
+            if (isNaN(seconds) || seconds <= 0) {
+                alert('Пожалуйста, введите корректное количество секунд.');
+                return;
+            }
+
+            requestNotificationPermission(); // Запрашиваем разрешение
+
+            let timeLeft = seconds;
+            updateTimerDisplay(timeLeft); // Обновляем отображение сразу
+
+            // Запускаем интервал для обновления таймера каждую секунду
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay(timeLeft);
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval); // Останавливаем таймер
+                    sendNotification(); // Отправляем уведомление
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
