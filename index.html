@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Таймер с уведомлением</title>
+   </head>
+   <body>
+       <h1>Таймер</h1>
+       <input type="number" id="timerInput" placeholder="Введите время в секундах">
+       <button id="startTimer">Запустить таймер</button>
+
+       <script>
+           // Запрашиваем разрешение на уведомления
+           function requestNotificationPermission() {
+               if (Notification.permission !== 'granted') {
+                   Notification.requestPermission().then(permission => {
+                       if (permission === 'granted') {
+                           console.log('Разрешение на уведомления получено!');
+                       }
+                   });
+               }
+           }
+
+           // Отправляем уведомление
+           function sendNotification() {
+               if (Notification.permission === 'granted') {
+                   new Notification('Время вышло!', {
+                       body: 'Таймер завершил отсчет.',
+                       icon: 'icon.png' // Иконка для уведомления
+                   });
+               } else {
+                   console.log('Разрешение на уведомления не предоставлено.');
+               }
+           }
+
+           // Запуск таймера
+           document.getElementById('startTimer').addEventListener('click', () => {
+               const seconds = parseInt(document.getElementById('timerInput').value);
+               if (isNaN(seconds) || seconds <= 0) {
+                   alert('Пожалуйста, введите корректное количество секунд.');
+                   return;
+               }
+
+               requestNotificationPermission(); // Запрашиваем разрешение
+
+               setTimeout(() => {
+                   sendNotification(); // Отправляем уведомление
+               }, seconds * 1000); // Устанавливаем таймер
+           });
+       </script>
+   </body>
+   </html>
